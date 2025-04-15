@@ -124,7 +124,8 @@ final class UserController extends AbstractController
     public function updateById(
         int $id,
         Request $request,
-        EntityManagerInterface $entityManager
+        EntityManagerInterface $entityManager,
+        UserPasswordHasherInterface $passwordHasher
     ): JsonResponse {
 
         $user = $entityManager->getRepository(User::class)->find($id);
@@ -151,6 +152,9 @@ final class UserController extends AbstractController
             } catch (\Exception $e) {
                 return $this->json(['error' => 'Invalid date format.'], 400);
             }
+        }
+        if (isset($payload['password'])) {
+            $user->setPassword($passwordHasher->hashPassword($user, $payload['password']));
         }
 
         $entityManager->flush();
